@@ -1,0 +1,46 @@
+---
+title: "CV"
+author: "Yan Wang"
+date: "2018å¹<b4>12æœ<88>12æ—<a5>"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## Including Plots
+
+You can also embed plots, for example:
+
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(glmnet)
+library(tidyverse)
+```
+
+```{r}
+mvbeer <- read.csv(file="c:/Users/ywan3/Desktop/mvbeer.csv", header=TRUE,nrows=3000000)
+X <- as.matrix( select(mvbeer, c(price,week,vol,fstv,sale)))
+y <- mvbeer$rev
+mod_cv <- cv.glmnet(x=X, y=y, family=("gaussian"))
+mod_cv$lambda.1se
+coef(mod_cv, mod_cv$lambda.1se)
+mod_cv$lambda.min
+coef(mod_cv, mod_cv$lambda.min)
+```
+
+```{r}
+X1<- as.matrix( select(mvbeer, c(price,week,vol,fstv,sale_B,sale_C,sale_S)))
+mod_cv1 <- cv.glmnet(x=X1, y=y, family=("gaussian"))
+mod_cv1$lambda.1se
+coef(mod_cv1, mod_cv1$lambda.1se)
+mod_cv1$lambda.min
+coef(mod_cv1, mod_cv1$lambda.min)
+```
