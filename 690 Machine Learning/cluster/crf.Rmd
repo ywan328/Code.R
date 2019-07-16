@@ -1,0 +1,81 @@
+---
+title: "Crf"
+author: "wzm"
+date: "12/9/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(grf)
+library(ggplot2)
+```
+
+# data preprocessing
+
+```{r clean}
+#mvbeer <- read.csv("data/mvbeer.csv")
+#mvbeer$store_id <- factor(mvbeer$store_id)
+for(i in c('store_id','brand','type')) {mvbeer[[i]] <- as.numeric(mvbeer[[i]])}
+X <- as.matrix( select(mvbeer, -c(rev, sale,sale_S,sale_C,sale_B,upc)))
+y <- mvbeer$rev
+w <- mvbeer$sale
+rm(mvbeer);rm(i)
+```
+
+# causal forest
+
+```{r causal forest}
+set.seed(100)
+mtry <- ceiling(ncol(X)/3)
+
+start_time <- Sys.time()
+model <- causal_forest( X, y, w , mtry = mtry ,
+                        num.trees = 200, honesty = TRUE, honesty.fraction = 0.5 )
+end_time <- Sys.time()
+end_time - start_time
+print( model )
+cat('\n')
+print( average_treatment_effect(model) )
+cat('\n')
+print(colnames(X))
+```
+
+# load function
+
+```{r functions}
+source('functions.R')
+treat <- avg_treat(X)
+```
+
+# plot1
+
+```{r plot1, echo=FALSE}
+plot_part_avg(treat,"price",sav = "price.pdf")
+plot_part_avg(treat,"week",sav = "week.pdf")
+plot_part_avg(treat,"brand",sav = "brand.pdf")
+plot_part_avg(treat,"type",sav = "type.pdf")
+plot_part_avg(treat,"cluster",sav = "cluster.pdf")
+# plot_part_avg(treat,"fstv",type="p")
+# plot_part_avg(treat,"highrev",type="p")
+```
+
+# plot2
+
+```{r plot2, echo=FALSE}
+avg_box(treat,c("week","price"),"week_price.pdf")
+avg_box(treat,c("brand","type"),"brand_type.pdf")
+avg_box(treat,c("fstv","highrev"),"fstv_highrev.pdf")
+avg_box(treat,c("vol","cluster"),"vol_cluster.pdf")
+```
+
+# plot3
+
+```{r plot3, echo=FALSE}
+plot_part(X,8, sav = "partial_price.pdf")
+plot_part(X,7, sav = "partial_cluster.pdf")
+plot_part(X,2, sav = "partial_week.pdf")
+plot_part(X,3, sav = "partial_brand.pdf")
+plot_part(X,4, sav = "partial_type.pdf")
+```
